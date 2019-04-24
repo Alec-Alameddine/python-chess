@@ -1,4 +1,4 @@
-from time import sleep as sl
+from time import sleep
 
 class Config:
     letters = tuple('abcdefghijklmnopqrstuvwxyz')
@@ -31,6 +31,7 @@ class Config:
                 print(' '*6 + f'{cls.letters[x]}', end='')
             print('\n')
 
+        print('\n'*2)
         printl()
         for x in range(len(cls.board)):
             print(f'{len(cls.board)-x:0{len(str(len(cls.board)))}}  {cls.board[x]}  {len(cls.board)-x:0{len(str(len(cls.board)))}}\n')
@@ -52,12 +53,14 @@ class ChessPiece:
         self.x = int(Config.tile_convert(pos[0]))
         self.y = len(Config.board) - int(pos[1])
         self.color = color
+        self.piece = piece
         self.pieceid = num
         self.set_id()
         self.create()
+        Config.print_board()
 
     def __str__(self):
-        return self.__class__.__name__
+        return self.piece
 
     def set_id(self):
         if self.__class__.__name__ != "Knight":
@@ -106,7 +109,7 @@ class ChessPiece:
         print('Position: ', Config.tile_convert(self.x), Config.tile_convert(self.y, True), sep='')
         print('Color: ', self.color)
 
-    def delete(self):  # Doesn't actually delete the piece. It can be brought back by moving it to a square
+    def erase(self):  # Doesn't delete the piece. It can be brought back by moving it to a square
         Config.board[self.y][self.x] = '___'
 
 
@@ -126,23 +129,9 @@ class Knight(ChessPiece):
         return pos_moves
 
     def demo(self):  # default board
-        knight1.teleport('e1')
-        sl(1)
-        knight1.move('f3')
-        sl(1)
-        knight1.move('g5')
-        sl(1)
-        knight1.move('h7')
-        sl(1)
-        knight1.move('f8')
-        sl(1)
-        knight1.move('e6')
-        sl(1)
-        knight1.move('c5')
-        sl(1)
-        knight1.move('d3')
-        sl(1)
-        knight1.move('e1')
+        for pos in ('e1', 'f3', 'g5', 'h7', 'f8', 'e6', 'c5', 'd3', 'e1'):
+            self.teleport(pos)
+            sleep(1)
 
 class Rook(ChessPiece):
     def __init__(self, pos, color=None, num='_'):
