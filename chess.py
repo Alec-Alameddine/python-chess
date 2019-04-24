@@ -1,26 +1,25 @@
 from time import sleep
 
 class Config:
+    types = {'min': 1, 'small': 5, 'default': 8, 'extended': 10, 'max': 26}
     letters = tuple('abcdefghijklmnopqrstuvwxyz')
+    board = 'UNINITIALIZED'
+    b_len = 'UNINITIALIZED'
 
     @classmethod
     def new_board(cls, btype):
         def size(x):
-            return [['___' for _ in range(x)] for _ in range(x)]
+            return [['___' for _ in range(x)] for _ in range(x)], x
 
-        if 'custom' in btype.lower():
+        btype = btype.lower()
+
+        if 'custom' in btype:
             btype = int(btype.replace('custom', '').strip())
-            cls.board = size(btype)
-        elif btype.lower() == 'default':
-            cls.board = size(8)
-        elif btype.lower() == 'extended':
-            cls.board = size(10)
-        elif btype.lower() == 'small':
-            cls.board = size(5)
-        elif btype.lower() == 'max':
-            cls.board = size(26)
-        elif btype.lower() == 'min':
-            cls.board = size(1)
+            cls.board, cls.b_len = size(cls.types[btype])
+        elif btype in cls.types:
+            cls.board, cls.b_len = size(cls.types[btype])
+        else:
+            print(f'Unable to initialize board of unknown type {btype}')
 
     @classmethod
     def print_board(cls):
@@ -51,7 +50,7 @@ class Config:
 class ChessPiece:
     def __init__(self, pos, color, num, piece):
         self.x = int(Config.tile_convert(pos[0]))
-        self.y = len(Config.board) - int(pos[1])
+        self.y = Config.b_len - int(pos[1])
         self.color = color
         self.piece = piece
         self.pieceid = num
@@ -114,7 +113,7 @@ class ChessPiece:
 
 
 class Knight(ChessPiece):
-    def __init__(self, pos, color=None, num='_'):
+    def __init__(self, pos='a1', color=None, num='_'):
         ChessPiece.__init__(self, pos, color, num, self.__class__.__name__)
 
 
@@ -123,7 +122,7 @@ class Knight(ChessPiece):
         for xoff, yoff in ( (1, 2), (-1, 2), (1, -2), (-1, -2), (2, 1), (-2, 1), (2, -1), (-2, -1) ):
             newx = self.x + xoff
             newy = self.y + yoff
-            if 0 <= newx < len(Config.board) and 0 <= newy < len(Config.board) and Config.board[newx][newy] == '___':
+            if 0 <= newx < Config.b_len and 0 <= newy < Config.b_len and Config.board[newx][newy] == '___':
                 pos_moves.append(f'{Config.tile_convert(newx)}{Config.tile_convert(newy, True)}')
 
         return pos_moves
@@ -134,8 +133,15 @@ class Knight(ChessPiece):
             sleep(1)
 
 class Rook(ChessPiece):
-    def __init__(self, pos, color=None, num='_'):
+    def __init__(self, pos='a1', color=None, num='_'):
         ChessPiece.__init__(self, pos, color, num, self.__class__.__name__)
+
+    def possible_moves(self):
+        pos_moves = []
+
+        x, y = self.x, self.y
+
+        for x in range(Config.b_len): pass
 
 Config.new_board('default')
 
