@@ -45,6 +45,7 @@ class Config:
                 print(f'{cls.b_len-x:0{len(str(cls.b_len))}}  {cls.board[x]}  {cls.b_len-x:0{len(str(cls.b_len))}}\n')
             printl()
             print('\n'*4)
+
         else:
             print('Unable to print board of uninitialized type')
 
@@ -209,12 +210,27 @@ class Pawn(ChessPiece):
                         pos_moves.append(f'{Config.tile_convert(x+1)}{Config.tile_convert(y+1, True)}')
                 except IndexError: pass
 
+        if self.color != 'Black':
+            if self.color is not None:
+                try:
+                    if Config.c_convert(self.color) in Config.board[y-1][x-1]:
+                        pos_moves.append(f'{Config.tile_convert(x-1)}{Config.tile_convert(y-1, True)}')
+                except IndexError: pass
+            else:
+                try:
+                    if Config.board[y+1][x+1] != '___':
+                        pos_moves.append(f'{Config.tile_convert(x-1)}{Config.tile_convert(y-1, True)}')
+                except IndexError: pass
+
         # En Passant
 
 
         return sorted(pos_moves)
 
-    def promote(): pass
+    def promote(self, piece):  # oringal_piece = original_piece.promote(new_piece)
+        pos = f'{Config.tile_convert(self.x)}{Config.tile_convert(self.y, True)}'
+
+        return piece(pos, color=self.color, num='p')
 
 class Knight(ChessPiece):
     def __init__(self, pos='a1', color=None, num='_'):
@@ -238,6 +254,12 @@ class Knight(ChessPiece):
         for pos in ('e1', 'f3', 'g5', 'h7', 'f8', 'e6', 'c5', 'd3', 'e1'):
             self.teleport(pos, rec)
             sleep(1)
+
+
+class Bishop(ChessPiece):
+    def __init__(self, pos='a1', color=None, num='_'):
+        ChessPiece.__init__(self, pos, color, num, self.__class__.__name__)
+
 
 class Rook(ChessPiece):
     def __init__(self, pos='a1', color=None, num='_'):
@@ -296,9 +318,14 @@ class Rook(ChessPiece):
             self.teleport(pos, rec)
             sleep(1)
 
+class Queen(ChessPiece):
+    def __init__(self, pos='a1', color=None, num='_'):
+        ChessPiece.__init__(self, pos, color, num, self.__class__.__name__)
+
 Config.new_board('default')
 
 r1 = Rook(color='w')
 n1 = Knight('a5', color='b')
 p1 = Pawn('e1', color='w')
 p2 = Pawn('e8', color='b')
+p3 = Pawn('f7', color='w')
