@@ -246,7 +246,7 @@ class Rook(ChessPiece):
             if self.color is not None:
                 if self.color[0].lower() not in Config.board[new_y][x]:
                     pos_moves.append(f'{Config.tile_convert(x)}{Config.tile_convert(new_y, True)}')
-                    if Config.board[y][new_x] != '___': break
+                    if Config.board[new_y][x] != '___': break
                 else: break
             else:
                 pos_moves.append(f'{Config.tile_convert(x)}{Config.tile_convert(new_y, True)}')
@@ -256,7 +256,7 @@ class Rook(ChessPiece):
             if self.color is not None:
                 if self.color[0].lower() not in Config.board[new_y][x]:
                     pos_moves.append(f'{Config.tile_convert(x)}{Config.tile_convert(new_y, True)}')
-                    if Config.board[y][new_x] != '___': break
+                    if Config.board[new_y][x] != '___': break
                 else: break
             else:
                 pos_moves.append(f'{Config.tile_convert(x)}{Config.tile_convert(new_y, True)}')
