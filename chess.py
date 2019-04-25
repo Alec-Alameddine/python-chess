@@ -62,6 +62,13 @@ class Config:
     def l_num_to_coord(cls, pos):
         return Config.b_len - int(pos[1]), int(Config.tile_convert(pos[0]))
 
+    @classmethod
+    def c_convert(cls, color):
+        if color == 'White':
+            return 'b'
+        if color == "Black":
+            return 'w'
+
 class ChessPiece:
     def __init__(self, pos, color, num, piece):
         self.x = int(Config.tile_convert(pos[0]))
@@ -91,9 +98,9 @@ class ChessPiece:
             if self.color.lower() in ('black', 'white', 'b', 'w'):
                 self.pieceid = self.color.lower()[0] + self.pieceid
                 if self.color.lower() == 'b':
-                    self.color = 'black'
+                    self.color = 'Black'
                 elif self.color.lower() == 'w':
-                    self.color = 'white'
+                    self.color = 'White'
             else:
                 self.color = None
                 print("Invalid color input. Color not set.")
@@ -159,34 +166,53 @@ class Pawn(ChessPiece):
         x, y = self.x, self.y
 
         # Forward
-        if not self.move:  # Starting Position
+        if not self.moves: # Starting Position
             if self.color != 'White':
-                for y_new in range(y, y+2):
-                    if Config.board[y_new][x] == '___':
-                        pos_moves.append(f'{Config.tile_convert(x)}{Config.tile_convert(new_y, True)}')
-                    else: break
+                for new_y in (y+1, y+2):
+                    try:
+                        if Config.board[new_y][x] == '___':
+                            pos_moves.append(f'{Config.tile_convert(x)}{Config.tile_convert(new_y, True)}')
+                        else: break
+                    except IndexError: pass
 
             if self.color != 'Black':
-                for y_new in range(y, y-2):
-                    if Config.board[y_new][x] == '___':
-                        pos_moves.append(f'{Config.tile_convert(x)}{Config.tile_convert(new_y, True)}')
-                    else: break
+                for new_y in (y-1, y-2):
+                    try:
+                        if Config.board[new_y][x] == '___':
+                            pos_moves.append(f'{Config.tile_convert(x)}{Config.tile_convert(new_y, True)}')
+                        else: break
+                    except IndexError: pass
 
         else:  # Post-Start
             if self.color != 'White':
-                if Config.board[y+1][x] == '___':
-                    pos_moves.append(f'{Config.tile_convert(x)}{Config.tile_convert(y+1, True)}')
+                try:
+                    if Config.board[y+1][x] == '___':
+                        pos_moves.append(f'{Config.tile_convert(x)}{Config.tile_convert(y+1, True)}')
+                except IndexError: pass
 
             if self.color != 'Black':
-                if Config.board[y-1][x] == '___':
-                    pos_moves.append(f'{Config.tile_convert(x)}{Config.tile_convert(y-1, True)}')
+                try:
+                    if Config.board[y-1][x] == '___':
+                        pos_moves.append(f'{Config.tile_convert(x)}{Config.tile_convert(y-1, True)}')
+                except IndexError: pass
+
+        # Capturing
+        if self.color != 'White':
+            if self.color is not None:
+                try:
+                    if Config.c_convert(self.color) in Config.board[y+1][x+1]:
+                        pos_moves.append(f'{Config.tile_convert(x+1)}{Config.tile_convert(y+1, True)}')
+                except IndexError: pass
+            else:
+                try:
+                    if Config.board[y+1][x+1] != '___':
+                        pos_moves.append(f'{Config.tile_convert(x+1)}{Config.tile_convert(y+1, True)}')
+                except IndexError: pass
+
+        # En Passant
 
 
         return sorted(pos_moves)
-
-        # Capturing
-
-        # En Passant
 
     def promote(): pass
 
@@ -273,5 +299,6 @@ class Rook(ChessPiece):
 Config.new_board('default')
 
 r1 = Rook(color='w')
-n1 = Knight('a5', color='w')
-p1 = Pawn('e1', color='b')
+n1 = Knight('a5', color='b')
+p1 = Pawn('e1', color='w')
+p2 = Pawn('e8', color='b')
