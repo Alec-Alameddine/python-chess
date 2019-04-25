@@ -1,7 +1,7 @@
 from time import sleep
 
 class Config:
-    types = {'min': 1, 'small': 5, 'default': 8, 'extended': 10, 'max': 26}
+    types = {'min': 1, 'miniature': 3, 'small': 5, 'default': 8, 'extended': 11, 'large': 15, 'massive': 20, 'max': 26}
     letters = tuple('abcdefghijklmnopqrstuvwxyz')
     board = 'UNINITIALIZED'
     b_len = 'UNINITIALIZED'
@@ -11,31 +11,42 @@ class Config:
         def size(x):
             return [['___' for _ in range(x)] for _ in range(x)], x
 
-        btype = btype.lower()
+        if btype is not None:
+            btype = btype.lower()
 
-        if 'custom' in btype:
-            btype = int(btype.replace('custom', '').strip())
-            cls.board, cls.b_len = size(cls.types[btype])
-        elif btype in cls.types:
-            cls.board, cls.b_len = size(cls.types[btype])
+            if 'custom' in btype and 1:
+                btype = int(btype.replace('custom', '').strip())
+                if 1 <= btype <= 26:
+                    cls.board, cls.b_len = size(btype)
+                else:
+                    btype = None
+                    cls.new_board(btype)
+            elif btype in cls.types:
+                cls.board, cls.b_len = size(cls.types[btype])
+            else:
+                print(f'Unable to initialize board of unknown type {btype}')
+
         else:
-            print(f'Unable to initialize board of unknown type {btype}')
+            print('Unable to initalize board with a size lower than 1 or greater than 26')
 
     @classmethod
     def print_board(cls):
-        def printl():
-            if len(str(len(cls.board))) == 2:
-                print(' ', end='')
-            for x in range(len(cls.board)):
-                print(' '*6 + f'{cls.letters[x]}', end='')
-            print('\n')
+        if Config.b_len != 'UNINITIALIZED':
+            def printl():
+                if len(str(len(cls.board))) == 2:
+                    print(' ', end='')
+                for x in range(len(cls.board)):
+                    print(' '*6 + f'{cls.letters[x]}', end='')
+                print('\n')
 
-        print('\n'*2)
-        printl()
-        for x in range(len(cls.board)):
-            print(f'{len(cls.board)-x:0{len(str(len(cls.board)))}}  {cls.board[x]}  {len(cls.board)-x:0{len(str(len(cls.board)))}}\n')
-        printl()
-        print('\n'*4)
+            print('\n'*2)
+            printl()
+            for x in range(len(cls.board)):
+                print(f'{len(cls.board)-x:0{len(str(len(cls.board)))}}  {cls.board[x]}  {len(cls.board)-x:0{len(str(len(cls.board)))}}\n')
+            printl()
+            print('\n'*4)
+        else:
+            print('Unable to print board of uninitialized type')
 
     @classmethod
     def tile_convert(cls, x, disp=False):
