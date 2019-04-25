@@ -33,16 +33,16 @@ class Config:
     def print_board(cls):
         if Config.b_len != 'UNINITIALIZED':
             def printl():
-                if len(str(len(cls.board))) == 2:
+                if len(str(cls.b_len)) == 2:
                     print(' ', end='')
-                for x in range(len(cls.board)):
+                for x in range(cls.b_len):
                     print(' '*6 + f'{cls.letters[x]}', end='')
                 print('\n')
 
             print('\n'*2)
             printl()
-            for x in range(len(cls.board)):
-                print(f'{len(cls.board)-x:0{len(str(len(cls.board)))}}  {cls.board[x]}  {len(cls.board)-x:0{len(str(len(cls.board)))}}\n')
+            for x in range(cls.b_len):
+                print(f'{cls.b_len-x:0{len(str(cls.b_len))}}  {cls.board[x]}  {cls.b_len-x:0{len(str(cls.b_len))}}\n')
             printl()
             print('\n'*4)
         else:
@@ -56,7 +56,11 @@ class Config:
             else:
                 return cls.letters[x]
         else:  # disp converts the letter in {letter}{number} to a number
-            return len(cls.board) - int(x)
+            return cls.b_len - int(x)
+
+    @classmethod
+    def l_num_to_coord(cls, pos):
+        return Config.b_len - int(pos[1]), int(Config.tile_convert(pos[0]))
 
 class ChessPiece:
     def __init__(self, pos, color, num, piece):
@@ -65,12 +69,17 @@ class ChessPiece:
         self.color = color
         self.piece = piece
         self.pieceid = num
+        self.moves = 0
+        self.captured = []
         self.set_id()
         self.create()
         Config.print_board()
 
     def __str__(self):
         return self.piece
+
+    def __repr__(self):
+        return self.pieceid
 
     def set_id(self):
         if self.__class__.__name__ != "Knight":
@@ -100,8 +109,15 @@ class ChessPiece:
 
         Config.board[self.y][self.x] = self.pieceid
 
-    def teleport(self, pos):
+    def teleport(self, pos, record=False):
         Config.board[self.y][self.x] = '___'
+
+        if record:
+            self.moves += 1
+            coord = Config.l_num_to_coord(pos)
+            if Config.board[coord[0]][coord[1]] != '___':
+                self.captured.append(Config.board[coord[0]][coord[1]])
+                print(f'{self.pieceid} has captured {Config.board[coord[0]][coord[1]]}!')
 
         self.x = Config.tile_convert(pos[0])
         self.y = Config.tile_convert(pos[1], True)
@@ -112,7 +128,13 @@ class ChessPiece:
 
     def move(self, pos):
         if pos in self.possible_moves():
+            coord = Config.l_num_to_coord(pos)
+            if Config.board[coord[0]][coord[1]] != '___':
+                self.captured.append(Config.board[coord[0]][coord[1]])
+                print(f'{self.pieceid} has captured {Config.board[coord[0]][coord[1]]}!')
+
             self.teleport(pos)
+            self.moves += 1
         else:
             print(f'Unable to move to {pos}')
 
@@ -127,24 +149,68 @@ class ChessPiece:
         Config.board[self.y][self.x] = '___'
 
 
-class Knight(ChessPiece):
+class Pawn(ChessPiece):
     def __init__(self, pos='a1', color=None, num='_'):
         ChessPiece.__init__(self, pos, color, num, self.__class__.__name__)
 
+    def possible_moves(self):
+        pos_moves = []
+
+        x, y = self.x, self.y
+
+        # Forward
+        if not self.move:  # Starting Position
+            if self.color != 'White':
+                for y_new in range(y, y+2):
+                    if Config.board[y_new][x] == '___':
+                        pos_moves.append(f'{Config.tile_convert(x)}{Config.tile_convert(new_y, True)}')
+                    else: break
+
+            if self.color != 'Black':
+                for y_new in range(y, y-2):
+                    if Config.board[y_new][x] == '___':
+                        pos_moves.append(f'{Config.tile_convert(x)}{Config.tile_convert(new_y, True)}')
+                    else: break
+
+        else:  # Post-Start
+            if self.color != 'White':
+                if Config.board[y+1][x] == '___':
+                    pos_moves.append(f'{Config.tile_convert(x)}{Config.tile_convert(y+1, True)}')
+
+            if self.color != 'Black':
+                if Config.board[y-1][x] == '___':
+                    pos_moves.append(f'{Config.tile_convert(x)}{Config.tile_convert(y-1, True)}')
+
+
+        return sorted(pos_moves)
+
+        # Capturing
+
+        # En Passant
+
+    def promote(): pass
+
+class Knight(ChessPiece):
+    def __init__(self, pos='a1', color=None, num='_'):
+        ChessPiece.__init__(self, pos, color, num, self.__class__.__name__)
 
     def possible_moves(self):
         pos_moves = []
         for x_off, y_off in ( (1, 2), (-1, 2), (1, -2), (-1, -2), (2, 1), (-2, 1), (2, -1), (-2, -1) ):
             new_x = self.x + x_off
             new_y = self.y + y_off
-            if 0 <= new_x < Config.b_len and 0 <= new_y < Config.b_len and Config.board[new_y][new_x] == '___':
-                pos_moves.append(f'{Config.tile_convert(new_x)}{Config.tile_convert(new_y, True)}')
+            if 0 <= new_x < Config.b_len and 0 <= new_y < Config.b_len:
+                if self.color is not None:
+                    if self.color[0].lower() not in Config.board[new_y][new_x]:
+                        pos_moves.append(f'{Config.tile_convert(new_x)}{Config.tile_convert(new_y, True)}')
+                else:
+                    pos_moves.append(f'{Config.tile_convert(new_x)}{Config.tile_convert(new_y, True)}')
 
         return sorted(pos_moves)
 
-    def demo(self):  # default board
+    def demo(self, rec=True):  # default board
         for pos in ('e1', 'f3', 'g5', 'h7', 'f8', 'e6', 'c5', 'd3', 'e1'):
-            self.teleport(pos)
+            self.teleport(pos, rec)
             sleep(1)
 
 class Rook(ChessPiece):
@@ -158,36 +224,54 @@ class Rook(ChessPiece):
 
         # Left
         for new_x in range(x+1, Config.b_len):
-            if Config.board[y][new_x] == '___':
+            if self.color is not None:
+                if self.color[0].lower() not in Config.board[y][new_x]:
+                    pos_moves.append(f'{Config.tile_convert(new_x)}{Config.tile_convert(y, True)}')
+                    if Config.board[y][new_x] != '___': break
+                else: break
+            else:
                 pos_moves.append(f'{Config.tile_convert(new_x)}{Config.tile_convert(y, True)}')
-            else: break
 
         # Right
         for new_x in reversed(range(x)):
-            if Config.board[y][new_x] == '___':
+            if self.color is not None:
+                if self.color[0].lower() not in Config.board[y][new_x]:
+                    pos_moves.append(f'{Config.tile_convert(new_x)}{Config.tile_convert(y, True)}')
+                    if Config.board[y][new_x] != '___': break
+                else: break
+            else:
                 pos_moves.append(f'{Config.tile_convert(new_x)}{Config.tile_convert(y, True)}')
-            else: break
-
         # Up
         for new_y in reversed(range(y)):
-            if Config.board[new_y][x] == '___':
+            if self.color is not None:
+                if self.color[0].lower() not in Config.board[new_y][x]:
+                    pos_moves.append(f'{Config.tile_convert(x)}{Config.tile_convert(new_y, True)}')
+                    if Config.board[y][new_x] != '___': break
+                else: break
+            else:
                 pos_moves.append(f'{Config.tile_convert(x)}{Config.tile_convert(new_y, True)}')
-            else: break
 
         # Down
         for new_y in range(y+1, Config.b_len):
-            if Config.board[new_y][x] == '___':
+            if self.color is not None:
+                if self.color[0].lower() not in Config.board[new_y][x]:
+                    pos_moves.append(f'{Config.tile_convert(x)}{Config.tile_convert(new_y, True)}')
+                    if Config.board[y][new_x] != '___': break
+                else: break
+            else:
                 pos_moves.append(f'{Config.tile_convert(x)}{Config.tile_convert(new_y, True)}')
-            else: break
 
         return sorted(pos_moves)
 
-    def demo(self):  # default board
+    def castle(): pass
+
+    def demo(self, rec=True):  # default board
         for pos in ('a1', 'a8', 'h8', 'h1', 'a1'):
-            self.teleport(pos)
+            self.teleport(pos, rec)
             sleep(1)
 
 Config.new_board('default')
 
-r1 = Rook()
-r1.demo()
+r1 = Rook(color='w')
+n1 = Knight('a5', color='w')
+p1 = Pawn('e1', color='b')
