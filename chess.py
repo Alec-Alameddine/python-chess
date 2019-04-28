@@ -274,9 +274,13 @@ class Bishop(ChessPiece):
 
         x, y = self.x, self.y
 
-        for r in (zip(range(x - 1, -1, -1), range(y - 1, -1, -1)), zip(range(x + 1, Config.b_len, 1),
-                  range(y + 1, Config.b_len, 1)), zip(range(x + 1, Config.b_len, 1), range(y - 1, -1, -1)),
-                  zip(range(x - 1, -1, -1), range(y + 1, Config.b_len, 1))):
+        right_up = zip(range(x + 1, Config.b_len, 1), range(y - 1, -1, -1))
+        right_down = zip(range(x + 1, Config.b_len, 1), range(y + 1, Config.b_len, 1))
+
+        left_up = zip(range(x - 1, -1, -1), range(y - 1, -1, -1))
+        left_down = zip(range(x - 1, -1, -1), range(y + 1, Config.b_len, 1))
+
+        for r in (right_up, right_down, left_up, left_down):
             for new_x, new_y in r:
                 if self.color is not None:
                     if self.color[0].lower() not in Config.board[new_y][new_x]:
