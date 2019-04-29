@@ -402,6 +402,19 @@ class King(ChessPiece):
     def possible_moves(self):
         pos_moves = []
 
+        x, y = self.x, self.y
+
+        for x_off, y_off in ( (0, 1), (0, -1), (1, 0), (-1, 0), (1, 1), (-1, 1), (-1, -1), (1, -1) ):
+            new_x = self.x + x_off
+            new_y = self.y + y_off
+            if 0 <= new_x < Config.b_len and 0 <= new_y < Config.b_len:
+                if self.color is not None:
+                    if self.color[0].lower() not in Config.board[new_y][new_x]:
+                        pos_moves.append(f'{Config.tile_convert(new_x)}{Config.tile_convert(new_y, True)}')
+                else:
+                    pos_moves.append(f'{Config.tile_convert(new_x)}{Config.tile_convert(new_y, True)}')
+
+
         return sorted(pos_moves)
 
 
