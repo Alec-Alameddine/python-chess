@@ -4,6 +4,8 @@ class Config:
     DEMTIME = .8
     types = {'min': 1, 'miniature': 3, 'small': 5, 'default': 8, 'extended': 11, 'large': 15, 'massive': 20, 'max': 26}
     letters = tuple('abcdefghijklmnopqrstuvwxyz')
+    black_pieces = {'Pawn' : "♙", 'Rook' : "♖", 'Knight' : "♘", 'Bishop' : "♗", 'King' : "♔", 'Queen' : "♕" }
+    white_pieces = {'Pawn' : "♟", 'Rook' : "♜", 'Knight' : "♞", 'Bishop' : "♝", 'King' : "♚", 'Queen' : "♛" }
     board = 'UNINITIALIZED'
     b_len = 'UNINITIALIZED'
 
@@ -157,10 +159,14 @@ class ChessPiece:
     def erase(self):  # Doesn't delete the piece. It can be brought back by moving it to a square
         Config.board[self.y][self.x] = '___'
 
+    @staticmethod
+    def castle(king, rook): pass
+
 
 class Pawn(ChessPiece):
     def __init__(self, pos='a1', color=None, num='_'):
         ChessPiece.__init__(self, pos, color, num, self.__class__.__name__)
+        self.two_move = False
 
     def possible_moves(self):
         pos_moves = []
@@ -236,10 +242,8 @@ class Pawn(ChessPiece):
     def promote2(self, piece):
         pos = f'{Config.tile_convert(self.x)}{Config.tile_convert(self.y, True)}'
 
-        self.__class__ = piece
-        self.pieceid = 'p'
-        self.set_id()
-        self.create()
+        Config.board[self.y][self.x] = piece(pos, color=self.color, num='p')
+
 
 class Knight(ChessPiece):
     def __init__(self, pos='a1', color=None, num='_'):
@@ -274,11 +278,11 @@ class Bishop(ChessPiece):
 
         x, y = self.x, self.y
 
-        right_up = zip(range(x + 1, Config.b_len, 1), range(y - 1, -1, -1))
-        right_down = zip(range(x + 1, Config.b_len, 1), range(y + 1, Config.b_len, 1))
+        right_up = zip(range(x + 1, Config.b_len), range(y - 1, -1, -1))
+        right_down = zip(range(x + 1, Config.b_len), range(y + 1, Config.b_len))
 
         left_up = zip(range(x - 1, -1, -1), range(y - 1, -1, -1))
-        left_down = zip(range(x - 1, -1, -1), range(y + 1, Config.b_len, 1))
+        left_down = zip(range(x - 1, -1, -1), range(y + 1, Config.b_len))
 
         for r in (right_up, right_down, left_up, left_down):
             for new_x, new_y in r:
@@ -333,8 +337,6 @@ class Rook(ChessPiece):
 
         return sorted(pos_moves)
 
-    def castle(): pass
-
     def demo(self, rec=True):  # default board
         for pos in ('a1', 'a8', 'h8', 'h1', 'a1'):
             self.teleport(pos, rec)
@@ -347,7 +349,50 @@ class Queen(ChessPiece):
     def possible_moves(self):
         pos_moves = []
 
-        return pos_moves
+        x, y = self.x, self.y
+
+        # Horizontal
+        for r in (range(x+1, Config.b_len), reversed(range(x))):
+            for new_x in r:
+                if self.color is not None:
+                    if self.color[0].lower() not in Config.board[y][new_x]:
+                        pos_moves.append(f'{Config.tile_convert(new_x)}{Config.tile_convert(y, True)}')
+                        if Config.board[y][new_x] != '___': break
+                    else: break
+                else:
+                    pos_moves.append(f'{Config.tile_convert(new_x)}{Config.tile_convert(y, True)}')
+                    if Config.board[new_y][new_x] != '___': break
+
+        # Vertical
+        for r in (range(y+1, Config.b_len), reversed(range(y))):
+            for new_y in r:
+                if self.color is not None:
+                    if self.color[0].lower() not in Config.board[new_y][x]:
+                        pos_moves.append(f'{Config.tile_convert(x)}{Config.tile_convert(new_y, True)}')
+                        if Config.board[new_y][x] != '___': break
+                    else: break
+                else:
+                    pos_moves.append(f'{Config.tile_convert(x)}{Config.tile_convert(new_y, True)}')
+                    if Config.board[new_y][new_x] != '___': break
+
+        #Diagonal
+        right_up = zip(range(x + 1, Config.b_len), range(y - 1, -1, -1))
+        right_down = zip(range(x + 1, Config.b_len), range(y + 1, Config.b_len))
+
+        left_up = zip(range(x - 1, -1, -1), range(y - 1, -1, -1))
+        left_down = zip(range(x - 1, -1, -1), range(y + 1, Config.b_len))
+
+        for r in (right_up, right_down, left_up, left_down):
+            for new_x, new_y in r:
+                if self.color is not None:
+                    if self.color[0].lower() not in Config.board[new_y][new_x]:
+                        pos_moves.append(f'{Config.tile_convert(new_x)}{Config.tile_convert(new_y, True)}')
+                        if Config.board[new_y][new_x] != '___': break
+                    else: break
+                else:
+                    pos_moves.append(f'{Config.tile_convert(new_x)}{Config.tile_convert(new_y, True)}')
+
+        return sorted(pos_moves)
 
 
 class King(ChessPiece):
@@ -357,7 +402,7 @@ class King(ChessPiece):
     def possible_moves(self):
         pos_moves = []
 
-        return pos_moves
+        return sorted(pos_moves)
 
 
 Config.new_board('default')
@@ -370,3 +415,4 @@ p3 = Pawn('f7', color='w')
 
 p1.teleport('f4')
 p1 = p1.promote(Bishop)
+print(Config.white_pieces['Pawn'], Config.black_pieces['Pawn'])
