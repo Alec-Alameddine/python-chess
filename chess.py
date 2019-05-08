@@ -1,36 +1,43 @@
 from time import sleep
+from itertools import count
 
 class Config:
     DEMTIME = .8
     types = {'min': 1, 'miniature': 3, 'small': 5, 'default': 8, 'extended': 11, 'large': 15, 'massive': 20, 'max': 26}
     letters = tuple('abcdefghijklmnopqrstuvwxyz')
-    black_pieces = {'Pawn' : "♙", 'Rook' : "♖", 'Knight' : "♘", 'Bishop' : "♗", 'King' : "♔", 'Queen' : "♕" }
-    white_pieces = {'Pawn' : "♟", 'Rook' : "♜", 'Knight' : "♞", 'Bishop' : "♝", 'King' : "♚", 'Queen' : "♛" }
+    white_pieces = {'Pawn' : "♙", 'Rook' : "♖", 'Knight' : "♘", 'Bishop' : "♗", 'King' : "♔", 'Queen' : "♕" }
+    black_pieces = {'Pawn' : "♟", 'Rook' : "♜", 'Knight' : "♞", 'Bishop' : "♝", 'King' : "♚", 'Queen' : "♛" }
     board = 'UNINITIALIZED'
     b_len = 'UNINITIALIZED'
 
     @classmethod
-    def new_board(cls, btype):
+    def new_board(cls, btype='default'):
         def size(x):
             return [['___' for _ in range(x)] for _ in range(x)], x
+
+        s = False
 
         if btype is not None:
             btype = btype.lower()
 
-            if 'custom' in btype and 1:
+            if 'custom' in btype:
                 btype = int(btype.replace('custom', '').strip())
                 if 1 <= btype <= 26:
                     cls.board, cls.b_len = size(btype)
+                    s = True
                 else:
                     btype = None
                     cls.new_board(btype)
             elif btype in cls.types:
                 cls.board, cls.b_len = size(cls.types[btype])
+                s = True
             else:
                 print(f'Unable to initialize board of unknown type {btype}')
 
         else:
             print('Unable to initalize board with a size lower than 1 or greater than 26')
+
+        if s: cls.print_board()
 
     @classmethod
     def print_board(cls):
@@ -159,13 +166,25 @@ class ChessPiece:
     def erase(self):  # Doesn't delete the piece. It can be brought back by moving it to a square
         Config.board[self.y][self.x] = '___'
 
+    def demo(self, rec=True):  # default board
+        for pos in self.demo_moves:
+            self.teleport(pos, rec)
+            sleep(Config.DEMTIME)
+
+        if self.__class__ == Pawn:
+            self.promote2(Queen)
+
     @staticmethod
-    def castle(king, rook): pass
+    def castle(king, rook):
+        if not king.moves and not rook.moves:
+            if not king.in_check:
+                pass
 
 
 class Pawn(ChessPiece):
     def __init__(self, pos='a1', color=None, num='_'):
         ChessPiece.__init__(self, pos, color, num, self.__class__.__name__)
+        self.demo_moves = ('e1', 'e2', 'e3', 'e4', 'e5', 'e6', 'e7', 'e8')
         self.two_move = False
 
     def possible_moves(self):
@@ -248,6 +267,7 @@ class Pawn(ChessPiece):
 class Knight(ChessPiece):
     def __init__(self, pos='a1', color=None, num='_'):
         ChessPiece.__init__(self, pos, color, num, self.__class__.__name__)
+        self.demo_moves = ('e1', 'f3', 'g5', 'h7', 'f8', 'e6', 'c5', 'd3', 'e1')
 
     def possible_moves(self):
         pos_moves = []
@@ -263,15 +283,11 @@ class Knight(ChessPiece):
 
         return sorted(pos_moves)
 
-    def demo(self, rec=True):  # default board
-        for pos in ('e1', 'f3', 'g5', 'h7', 'f8', 'e6', 'c5', 'd3', 'e1'):
-            self.teleport(pos, rec)
-            sleep(Config.DEMTIME)
-
 
 class Bishop(ChessPiece):
     def __init__(self, pos='a1', color=None, num='_'):
         ChessPiece.__init__(self, pos, color, num, self.__class__.__name__)
+        self.demo_moves = ('a1', 'e5', 'b8', 'h2', 'e5', 'a1')
 
     def possible_moves(self):
         pos_moves = []
@@ -296,15 +312,11 @@ class Bishop(ChessPiece):
 
         return sorted(pos_moves)
 
-    def demo(self, rec=True):  # default board
-        for pos in ('a1', 'e5', 'b8', 'h2', 'e5', 'a1'):
-            self.teleport(pos, rec)
-            sleep(Config.DEMTIME)
-
 
 class Rook(ChessPiece):
     def __init__(self, pos='a1', color=None, num='_'):
         ChessPiece.__init__(self, pos, color, num, self.__class__.__name__)
+        self.demo_moves = ('a1', 'a8', 'h8', 'h1', 'a1')
 
     def possible_moves(self):
         pos_moves = []
@@ -337,14 +349,11 @@ class Rook(ChessPiece):
 
         return sorted(pos_moves)
 
-    def demo(self, rec=True):  # default board
-        for pos in ('a1', 'a8', 'h8', 'h1', 'a1'):
-            self.teleport(pos, rec)
-            sleep(Config.DEMTIME)
 
 class Queen(ChessPiece):
     def __init__(self, pos='a1', color=None, num='_'):
         ChessPiece.__init__(self, pos, color, num, self.__class__.__name__)
+        self.demo_moves = ('a1', 'h8', 'a8', 'h1', 'a1')
 
     def possible_moves(self):
         pos_moves = []
@@ -398,6 +407,8 @@ class Queen(ChessPiece):
 class King(ChessPiece):
     def __init__(self, pos='a1', color=None, num='_'):
         ChessPiece.__init__(self, pos, color, num, self.__class__.__name__)
+        self.demo_moves = ('e4', 'd5', 'c4', 'c5', 'd6', 'e5', 'e4')
+        self.in_check = False
 
     def possible_moves(self):
         pos_moves = []
@@ -418,14 +429,23 @@ class King(ChessPiece):
         return sorted(pos_moves)
 
 
-Config.new_board('default')
+class Game:
+    game = count(1)
 
-r1 = Rook(color='w')
-n1 = Knight('a5', color='b')
-p1 = Pawn('e1', color='w')
-p2 = Pawn('e8', color='b')
-p3 = Pawn('f7', color='w')
+    def __init__(self):
+        self.id = next(self.game)
+        self.turn = 0
 
-p1.teleport('f4')
-p1 = p1.promote(Bishop)
-print(Config.white_pieces['Pawn'], Config.black_pieces['Pawn'])
+
+g = Game()
+# Config.new_board('default')
+
+# r1 = Rook(color='w')
+# n1 = Knight('a5', color='b')
+# p1 = Pawn('e1', color='w')
+# p2 = Pawn('e8', color='b')
+# p3 = Pawn('f7', color='w')
+
+# p1.teleport('f4')
+# p1 = p1.promote(Bishop)
+# print(Config.white_pieces['Pawn'], Config.black_pieces['Pawn'])
