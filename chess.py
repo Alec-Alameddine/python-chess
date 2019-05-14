@@ -269,7 +269,8 @@ class Pawn(ChessPiece):
     def promote2(self, piece):
         pos = f'{Config.tile_convert(self.x)}{Config.tile_convert(self.y, True)}'
 
-        Config.board[self.y][self.x] = piece(pos, color=self.color, num='p')
+        self.__class__ = piece
+        self.__init__(pos, self.color, 'p')
 
 
 class Knight(ChessPiece):
