@@ -1,5 +1,6 @@
 from time import sleep
 from itertools import count
+from gc import get_objects
 
 class Config:
     DEMTIME = .8
@@ -60,18 +61,22 @@ class Config:
             print('Unable to print board of uninitialized type')
 
     @classmethod
-    def tile_convert(cls, x, disp=False):
-        if not disp:
+    def tile_convert(cls, x, display_tile=False):
+        if not display_tile:
             if isinstance(x, str):
                 return cls.letters.index(x)
             else:
                 return cls.letters[x]
-        else:  # disp converts the letter in {letter}{number} to a number
+        else:  # display_tile converts the letter in {letter}{number} to a number
             return cls.b_len - int(x)
 
     @classmethod
     def l_num_to_coord(cls, pos):
         return Config.b_len - int(pos[1]), int(Config.tile_convert(pos[0]))
+
+    @classmethod
+    def coord_to_tile(cls, x, y):  # IMPLIMENT THIS FOR EVERYTHING
+        return f'{Config.tile_convert(x)}{Config.tile_convert(y, True)}'
 
     @classmethod
     def c_convert(cls, color):
@@ -89,6 +94,7 @@ class ChessPiece:
         self.pieceid = num
         self.moves = 0
         self.captured = []
+        self.erased = False
         self.set_id()
         self.create()
         Config.print_board()
@@ -150,6 +156,7 @@ class ChessPiece:
             if Config.board[coord[0]][coord[1]] != '___':
                 self.captured.append(Config.board[coord[0]][coord[1]])
                 print(f'{self.pieceid} has captured {Config.board[coord[0]][coord[1]]}!')
+                # Erase piece
 
             self.teleport(pos)
             self.moves += 1
@@ -165,6 +172,7 @@ class ChessPiece:
 
     def erase(self):  # Doesn't delete the piece. It can be brought back by moving it to a square
         Config.board[self.y][self.x] = '___'
+        self.erased = True
 
     def demo(self, rec=True):  # default board
         for pos in self.demo_moves:
@@ -198,7 +206,7 @@ class Pawn(ChessPiece):
                 for new_y in (y+1, y+2):
                     try:
                         if Config.board[new_y][x] == '___':
-                            pos_moves.append(f'{Config.tile_convert(x)}{Config.tile_convert(new_y, True)}')
+                            pos_moves.append(Config.coord_to_tile(x, new_y))
                         else: break
                     except IndexError: pass
 
@@ -206,7 +214,7 @@ class Pawn(ChessPiece):
                 for new_y in (y-1, y-2):
                     try:
                         if Config.board[new_y][x] == '___':
-                            pos_moves.append(f'{Config.tile_convert(x)}{Config.tile_convert(new_y, True)}')
+                            pos_moves.append(Config.coord_to_tile(x, new_y))
                         else: break
                     except IndexError: pass
 
@@ -214,13 +222,13 @@ class Pawn(ChessPiece):
             if self.color != 'White':
                 try:
                     if Config.board[y+1][x] == '___':
-                        pos_moves.append(f'{Config.tile_convert(x)}{Config.tile_convert(y+1, True)}')
+                        pos_moves.append(Config.coord_to_tile(x, y+1))
                 except IndexError: pass
 
             if self.color != 'Black':
                 try:
                     if Config.board[y-1][x] == '___':
-                        pos_moves.append(f'{Config.tile_convert(x)}{Config.tile_convert(y-1, True)}')
+                        pos_moves.append(Config.coord_to_tile(x, y-1))
                 except IndexError: pass
 
         # Capturing
@@ -228,24 +236,24 @@ class Pawn(ChessPiece):
             if self.color is not None:
                 try:
                     if Config.c_convert(self.color) in Config.board[y+1][x+1]:
-                        pos_moves.append(f'{Config.tile_convert(x+1)}{Config.tile_convert(y+1, True)}')
+                        pos_moves.append(Config.coord_to_tile(x+1, y+1))
                 except IndexError: pass
             else:
                 try:
                     if Config.board[y+1][x+1] != '___':
-                        pos_moves.append(f'{Config.tile_convert(x+1)}{Config.tile_convert(y+1, True)}')
+                        pos_moves.append(Config.coord_to_tile(x+1, y+1))
                 except IndexError: pass
 
         if self.color != 'Black':
             if self.color is not None:
                 try:
                     if Config.c_convert(self.color) in Config.board[y-1][x-1]:
-                        pos_moves.append(f'{Config.tile_convert(x-1)}{Config.tile_convert(y-1, True)}')
+                        pos_moves.append(Config.coord_to_tile(x-1, y-1))
                 except IndexError: pass
             else:
                 try:
                     if Config.board[y+1][x+1] != '___':
-                        pos_moves.append(f'{Config.tile_convert(x-1)}{Config.tile_convert(y-1, True)}')
+                        pos_moves.append(Config.coord_to_tile(x-1, y-1))
                 except IndexError: pass
 
         # En Passant
@@ -436,15 +444,26 @@ class Game:
         self.id = next(self.game)
         self.turn = 0
 
+    @staticmethod
+    def attacks_on(piece):
+        pos = Config.coord_to_tile(piece.x, piece.y)
+
+        for instance in get_objects():
+            if isinstance(instance, ChessPiece) and instance is not piece:
+                if instance.color != piece.color or instance.color is None:
+                    if pos in instance.possible_moves():
+                        print(f'{piece.pieceid} is threatened by {instance.pieceid} on {pos}')
+
 
 g = Game()
-# Config.new_board('default')
+Config.new_board('default')
 
-# r1 = Rook(color='w')
-# n1 = Knight('a5', color='b')
-# p1 = Pawn('e1', color='w')
-# p2 = Pawn('e8', color='b')
-# p3 = Pawn('f7', color='w')
+r1 = Rook(color='w')
+n1 = Knight('a5', color='b')
+p1 = Pawn('e1', color='w')
+p2 = Pawn('e8', color='b')
+p3 = Pawn('f7', color='w')
+r1.teleport('b3')
 
 # p1.teleport('f4')
 # p1 = p1.promote(Bishop)
