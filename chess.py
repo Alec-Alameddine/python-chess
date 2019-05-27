@@ -5,6 +5,13 @@ from gc import get_objects
 
 
 class Chessboard:
+    """The chessboard.
+
+    The board can have different sizes, but is 8x8 by default. There
+    is a list of predefined sizes in Chessboard.TYPES, but custom sizes are
+    available by passing "custom<n>" to the constructor, where <n> is an
+    integer between 1 and 26.
+    """
 
     DEMTIME = .8  # seconds
     board = 'UNINITIALIZED'
@@ -32,49 +39,56 @@ class Chessboard:
         def size(x):
             return [['___' for _ in range(x)] for _ in range(x)], x
 
-        s = False
+        can_print = False
 
         if btype is not None:
             btype = btype.lower()
 
-            if 'custom' in btype:
-                btype = int(btype.replace('custom', '').strip())
+            if btype.startswith('custom'):
+                try:
+                    btype = int(btype.replace('custom', '').strip())
+
+                except ValueError: pass
+
                 if 1 <= btype <= 26:
                     cls.board, cls.b_len = size(btype)
-                    s = True
+                    can_print = True
                 else:
                     btype = None
                     cls.new_board(btype)
             elif btype in cls.TYPES:
                 cls.board, cls.b_len = size(cls.TYPES[btype])
-                s = True
+                can_print = True
             else:
-                print(f'Unable to initialize board of unknown type {btype}')
+                raise ValueError(f'Unable to initialize board of unknown type {btype}')
 
         else:
-            print('Unable to initialize board with a size lower than 1 or greater than 26')
+            raise ValueError('Unable to initialize board with a size lower than 1 or greater than 26')
 
-        if s: cls.print_board()
+        if can_print:
+            cls.print_board()
 
     @classmethod
-    def print_board(cls):
-        if Chessboard.b_len != 'UNINITIALIZED':
-            def printl():
-                if len(str(cls.b_len)) == 2:
-                    print(' ', end='')
-                for x in range(cls.b_len):
-                    print(' '*6 + f'{cls._LETTERS[x]}', end='')
-                print('\n')
+    def print_board(cls, leading=2, trailing=4):
+        """Print the board to the console
 
-            print('\n'*2)
-            printl()
-            for x in range(cls.b_len):
-                print(f'{cls.b_len-x:0{len(str(cls.b_len))}}  {cls.board[x]}  {cls.b_len-x:0{len(str(cls.b_len))}}\n')
-            printl()
-            print('\n'*4)
+        The number of leading and trailing newlines can be configured.
+        Their respective values are 2 and 4 by default.
+        """
+        def print_letters(n=True):
+            print(" " + "".join(f"{letter:>7}" for letter in cls._LETTERS[:cls.b_len]))
+            if n: print()
 
-        else:
-            print('Unable to print board of uninitialized type')
+        print("\n"*leading, end="")
+
+        print_letters()
+
+        for i in range(cls.b_len):
+            print(f'{cls.b_len-i:>2}  {cls.board[i]}  {cls.b_len-i:>2}\n')
+
+        print_letters(False)
+
+        print("\n"*trailing, end="")
 
     @classmethod
     def tile_convert(cls, x, display_tile=False):
@@ -82,7 +96,7 @@ class Chessboard:
             if isinstance(x, str):
                 return cls._LETTERS.index(x)
             else:
-                return cls.letters[x]
+                return cls._LETTERS[x]
         else:  # display_tile converts the letter in {letter}{number} to a number
             return cls.b_len - int(x)
 
