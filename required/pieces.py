@@ -5,7 +5,7 @@ from required.board import Chessboard
 
 class ChessPiece:
 
-    def __init__(self, pos, color, num, piece):
+    def __init__(self, pos, color, num, piece, show):
         self.x = int(Chessboard.tile_convert(pos[0]))
         self.y = Chessboard.board_size - int(pos[1])
         self.color = color
@@ -16,7 +16,9 @@ class ChessPiece:
         self.erased = False
         self.set_id()
         self.create()
-        Chessboard.print_board()
+
+        if show:
+            Chessboard.print_board()
 
     def __str__(self):
         return self.piece
@@ -86,7 +88,7 @@ class ChessPiece:
         else:
             print(f'Unable to move {self.pieceid} to {pos}')
 
-    def get_info(self):
+    def info(self):
         print(f'\n\n{self.__class__.__name__}:\n')
         print('ID: ', self.pieceid)
         print('Position: ', Chessboard.coord_to_tile(self.x, self.y), sep='')
@@ -112,8 +114,8 @@ class ChessPiece:
 
 
 class Pawn(ChessPiece):
-    def __init__(self, pos='a1', color=None, num='_'):
-        ChessPiece.__init__(self, pos, color, num, self.__class__.__name__)
+    def __init__(self, pos='a1', color=None, num='_', show=True):
+        ChessPiece.__init__(self, pos, color, num, self.__class__.__name__, show)
         self.demo_moves = ('e1', 'e2', 'e3', 'e4', 'e5', 'e6', 'e7', 'e8')
         self.two_move = False
 
@@ -195,8 +197,8 @@ class Pawn(ChessPiece):
 
 
 class Knight(ChessPiece):
-    def __init__(self, pos='a1', color=None, num='_'):
-        ChessPiece.__init__(self, pos, color, num, self.__class__.__name__)
+    def __init__(self, pos='a1', color=None, num='_', show=True):
+        ChessPiece.__init__(self, pos, color, num, self.__class__.__name__, show)
         self.demo_moves = ('e1', 'f3', 'g5', 'h7', 'f8', 'e6', 'c5', 'd3', 'e1')
 
     def possible_moves(self):
@@ -215,8 +217,8 @@ class Knight(ChessPiece):
 
 
 class Bishop(ChessPiece):
-    def __init__(self, pos='a1', color=None, num='_'):
-        ChessPiece.__init__(self, pos, color, num, self.__class__.__name__)
+    def __init__(self, pos='a1', color=None, num='_', show=True):
+        ChessPiece.__init__(self, pos, color, num, self.__class__.__name__, show)
         self.demo_moves = ('a1', 'e5', 'b8', 'h2', 'e5', 'a1')
 
     def possible_moves(self):
@@ -244,8 +246,8 @@ class Bishop(ChessPiece):
 
 
 class Rook(ChessPiece):
-    def __init__(self, pos='a1', color=None, num='_'):
-        ChessPiece.__init__(self, pos, color, num, self.__class__.__name__)
+    def __init__(self, pos='a1', color=None, num='_', show=True):
+        ChessPiece.__init__(self, pos, color, num, self.__class__.__name__, show)
         self.demo_moves = ('a1', 'a8', 'h8', 'h1', 'a1')
 
     def possible_moves(self):
@@ -281,8 +283,8 @@ class Rook(ChessPiece):
 
 
 class Queen(ChessPiece):
-    def __init__(self, pos='a1', color=None, num='_'):
-        ChessPiece.__init__(self, pos, color, num, self.__class__.__name__)
+    def __init__(self, pos='a1', color=None, num='_', show=True):
+        ChessPiece.__init__(self, pos, color, num, self.__class__.__name__, show)
         self.demo_moves = ('a1', 'h8', 'a8', 'h1', 'a1')
 
     def possible_moves(self):
@@ -335,8 +337,8 @@ class Queen(ChessPiece):
 
 
 class King(ChessPiece):
-    def __init__(self, pos='a1', color=None, num='_'):
-        ChessPiece.__init__(self, pos, color, num, self.__class__.__name__)
+    def __init__(self, pos='a1', color=None, num='_', show=True):
+        ChessPiece.__init__(self, pos, color, num, self.__class__.__name__, show)
         self.demo_moves = ('e4', 'd5', 'c4', 'c5', 'd6', 'e5', 'e4')
         self.in_check = False
 

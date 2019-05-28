@@ -2,7 +2,7 @@ from itertools import count
 from gc import get_objects
 
 from required.board import Chessboard
-from required.pieces import ChessPiece, Pawn, Knight, Rook
+from required.pieces import ChessPiece, Pawn, Knight, Bishop, Rook, Queen, King
 
 
 class Game:
@@ -33,16 +33,33 @@ class Game:
         self.turn += 1
 
 
-g = Game()
-Chessboard.new_board('default')
+def setup_board(setup_type):
+    layout = Chessboard._LAYOUTS[setup_type]
 
-r1 = Rook(color='w')
-n1 = Knight('a5', color='b')
-p1 = Pawn('e1', color='w')
-p2 = Pawn('e8', color='b')
-p3 = Pawn('f7', color='w')
-r1.teleport('b3')
+    for piece in layout:
+        #eval(f'global {piece}')
+        exec(f'{piece} = {layout[piece]}')
 
-# p1.teleport('f4')
-# p1 = p1.promote(Bishop)
-# print(Config.white_pieces['Pawn'], Config.black_pieces['Pawn'])
+
+def test():
+    """
+    For bug testing. Changes often.
+    """
+    g = Game()
+    Chessboard.new_board('default')
+
+    r1 = Rook(color='w')
+    n1 = Knight('a5', color='b')
+    p1 = Pawn('e1', color='w')
+    p2 = Pawn('e8', color='b')
+    p3 = Pawn('f7', color='w')
+    r1.teleport('b3')
+
+    # p1.teleport('f4')
+    # p1 = p1.promote(Bishop)
+    # print(Config.white_pieces['Pawn'], Config.black_pieces['Pawn'])
+
+
+if __name__ == '__main__':
+    Chessboard.new_board('default', False)
+    setup_board('default')

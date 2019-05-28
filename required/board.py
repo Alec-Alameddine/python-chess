@@ -1,6 +1,6 @@
 import string
 
-from required import layouts
+from required.layouts import LAYOUTS
 
 
 class Chessboard:
@@ -31,12 +31,12 @@ class Chessboard:
         'Bishop': "♝", 'King': "♚", 'Queen': "♛"
     }
 
-    LAYOUTS = layouts.LAYOUTS
+    _LAYOUTS = LAYOUTS
 
     _LETTERS = string.ascii_lowercase
 
     @classmethod
-    def new_board(cls, board_type='default'):
+    def new_board(cls, board_type='default', show=True):
         def size(x):
             return [['___' for _ in range(x)] for _ in range(x)], x
 
@@ -66,7 +66,7 @@ class Chessboard:
         else:
             raise ValueError('Unable to initialize board with a size lower than 1 or greater than 26')
 
-        if can_print:
+        if can_print and show:
             cls.print_board()
 
     @classmethod
