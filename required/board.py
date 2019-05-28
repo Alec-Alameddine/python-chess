@@ -1,7 +1,7 @@
 import string
 
-import required.chesserrors as ce
-from required.layouts import LAYOUTS
+import required.config.chesserrors as ce
+from required.config.layouts import LAYOUTS
 
 
 class Chessboard:

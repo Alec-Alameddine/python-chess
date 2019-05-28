@@ -1,6 +1,6 @@
 import time
 
-import required.chesserrors as ce
+import required.config.chesserrors as ce
 from required.board import Chessboard
 
 

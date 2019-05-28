@@ -1,9 +1,8 @@
 from itertools import count
 from gc import get_objects
 
-import required.chesserrors as ce
 from required.board import Chessboard
-from required.pieces import ChessPiece, Pawn, Knight, Bishop, Rook, Queen, King
+from required.pieces import ChessPiece, Pawn, Knight, Rook
 
 
 class Game:
