@@ -1,5 +1,6 @@
 import string
 
+import required.chesserrors as ce
 from required.layouts import LAYOUTS
 
 
@@ -61,10 +62,10 @@ class Chessboard:
                 cls.board, cls.board_size = size(cls.TYPES[board_type])
                 can_print = True
             else:
-                raise ValueError(f'Unable to initialize board of unknown type {board_type}')
+                raise ce.InitialzeError(f'Unable to initialize board of unknown type {board_type}')
 
         else:
-            raise ValueError('Unable to initialize board with a size lower than 1 or greater than 26')
+            raise ce.InitializeError('Unable to initialize board with a size lower than 1 or greater than 26')
 
         if can_print and show:
             cls.print_board()
@@ -111,7 +112,9 @@ class Chessboard:
 
     @classmethod
     def c_convert(cls, color):
-        if color == 'White':
+        if color == 'white':
             return 'b'
-        if color == "Black":
+        if color == "black":
             return 'w'
+        if color is None:
+            return 'n'

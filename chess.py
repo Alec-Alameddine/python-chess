@@ -1,6 +1,7 @@
 from itertools import count
 from gc import get_objects
 
+import required.chesserrors as ce
 from required.board import Chessboard
 from required.pieces import ChessPiece, Pawn, Knight, Bishop, Rook, Queen, King
 
@@ -33,12 +34,12 @@ class Game:
         self.turn += 1
 
 
-def setup_board(setup_type):
-    layout = Chessboard._LAYOUTS[setup_type]
+# def setup_board(setup_type):
+#     layout = Chessboard._LAYOUTS[setup_type]
 
-    for piece in layout:
-        #eval(f'global {piece}')
-        exec(f'{piece} = {layout[piece]}')
+#     for piece in layout:
+#         #eval(f'global {piece}')
+#         exec(f'{piece} = {layout[piece]}')
 
 
 def test():
@@ -62,4 +63,9 @@ def test():
 
 if __name__ == '__main__':
     Chessboard.new_board('default', False)
-    setup_board('default')
+
+    #setup_board('default')
+    layout = Chessboard._LAYOUTS['default']
+
+    for piece in layout:
+        exec(f'{piece} = {layout[piece]}')

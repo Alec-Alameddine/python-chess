@@ -1,5 +1,6 @@
 import time
 
+import required.chesserrors as ce
 from required.board import Chessboard
 
 
@@ -71,25 +72,28 @@ class ChessPiece:
         Chessboard.print_board()
 
     def move(self, pos):
-        if pos in self.possible_moves():
-            coord = Chessboard.l_num_to_coord(pos)
-            if Chessboard.board[coord[0]][coord[1]] != '___':
-                self.captured.append(Chessboard.board[coord[0]][coord[1]])
-                print(f'{self.pieceid} has captured {Chessboard.board[coord[0]][coord[1]]}!')
-                # Erase piece
+        try:
+            if pos in self.possible_moves():
+                coord = Chessboard.l_num_to_coord(pos)
+                if Chessboard.board[coord[0]][coord[1]] != '___':
+                    self.captured.append(Chessboard.board[coord[0]][coord[1]])
+                    print(f'{self.pieceid} has captured {Chessboard.board[coord[0]][coord[1]]}!')
+                    # Erase piece
 
-            if self.__class__ == Pawn:
-                if abs(int(pos[1]) - Chessboard.tile_convert(self.y, True)) == 2:
-                    self.two_move = True
+                if self.__class__ == Pawn:
+                    if abs(int(pos[1]) - Chessboard.tile_convert(self.y, True)) == 2:
+                        self.two_move = True
 
-            self.teleport(pos)
-            self.moves += 1
+                self.teleport(pos)
+                self.moves += 1
 
-        else:
-            print(f'Unable to move {self.pieceid} to {pos}')
+            else:
+                raise ce.CannotMoveError(f'Unable to move {self.pieceid} to {pos}')
+        except TypeError:
+            raise ce.CannotMoveError(f'{self.pieceid} has no possible moves!')
 
     def info(self):
-        print(f'\n\n{self.__class__.__name__}:\n')
+        print(f'\n{self.__class__.__name__}:\n')
         print('ID: ', self.pieceid)
         print('Position: ', Chessboard.coord_to_tile(self.x, self.y), sep='')
         print('Color: ', self.color)
@@ -182,7 +186,7 @@ class Pawn(ChessPiece):
 
         # En Passant
 
-        return sorted(pos_moves)
+        return sorted(pos_moves) or None
 
     def promote(self, piece):  # oringal_piece = original_piece.promote(new_piece)
         pos = Chessboard.coord_to_tile(self.x, self.y)
@@ -213,7 +217,7 @@ class Knight(ChessPiece):
                 else:
                     pos_moves.append(Chessboard.coord_to_tile(new_x, new_y))
 
-        return sorted(pos_moves)
+        return sorted(pos_moves) or None
 
 
 class Bishop(ChessPiece):
@@ -242,7 +246,7 @@ class Bishop(ChessPiece):
                 else:
                     pos_moves.append(Chessboard.coord_to_tile(new_x, new_y))
 
-        return sorted(pos_moves)
+        return sorted(pos_moves) or None
 
 
 class Rook(ChessPiece):
@@ -279,7 +283,7 @@ class Rook(ChessPiece):
                     pos_moves.append(Chessboard.coord_to_tile(x, new_y))
                     if Chessboard.board[new_y][new_x] != '___': break
 
-        return sorted(pos_moves)
+        return sorted(pos_moves) or None
 
 
 class Queen(ChessPiece):
@@ -333,7 +337,7 @@ class Queen(ChessPiece):
                 else:
                     pos_moves.append(Chessboard.coord_to_tile(new_x, new_y))
 
-        return sorted(pos_moves)
+        return sorted(pos_moves) or None
 
 
 class King(ChessPiece):
@@ -355,4 +359,4 @@ class King(ChessPiece):
                 else:
                     pos_moves.append(Chessboard.coord_to_tile(new_x, new_y))
 
-        return sorted(pos_moves)
+        return sorted(pos_moves) or None
