@@ -1,6 +1,6 @@
 import time
 
-from board import Chessboard
+from required.board import Chessboard
 
 
 class ChessPiece:

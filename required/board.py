@@ -1,6 +1,6 @@
 import string
 
-import layouts
+from required import layouts
 
 
 class Chessboard:
