@@ -117,4 +117,4 @@ class Chessboard:
         if color == "black":
             return 'w'
         if color is None:
-            return 'n'
+            return '_'

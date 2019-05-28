@@ -163,7 +163,9 @@ class Pawn(ChessPiece):
         if self.color != 'White':
             if self.color is not None:
                 try:
-                    if Chessboard.c_convert(self.color) in Chessboard.board[y + 1][x + 1]:
+                    color = Chessboard.c_convert(self.color)
+
+                    if Chessboard.board[y + 1][x + 1].startswith(color):
                         pos_moves.append(Chessboard.coord_to_tile(x + 1, y + 1))
                 except IndexError: pass
             else:
@@ -175,7 +177,9 @@ class Pawn(ChessPiece):
         if self.color != 'Black':
             if self.color is not None:
                 try:
-                    if Chessboard.c_convert(self.color) in Chessboard.board[y - 1][x - 1]:
+                    color = Chessboard.c_convert(self.color)
+
+                    if Chessboard.board[y - 1][x - 1].startswith(color):
                         pos_moves.append(Chessboard.coord_to_tile(x - 1, y - 1))
                 except IndexError: pass
             else:
